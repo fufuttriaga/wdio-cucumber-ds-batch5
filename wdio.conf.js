@@ -1,3 +1,4 @@
+import {browser} from '@wdio/globals' 
 export const config = {
     //
     // ====================
@@ -52,7 +53,13 @@ export const config = {
     capabilities: [{
         // capabilities for local browser web tests
         browserName: 'chrome' // or "firefox", "microsoftedge", "safari"
-    }],
+    },{
+        // maxInstances can get overwritten per capability. So if you have an in-house WebDriver
+        // grid with only 5 firefox instance available you can make sure that not more than
+        // 5 instance gets started at a time.
+        browserName: 'microsoftedge'
+    }
+],
 
     //
     // ===================
@@ -124,7 +131,12 @@ export const config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter
-    reporters: ['spec','json','cucumberjs-json','mochawesome'],
+    reporters: ['spec',
+        ['light',{
+            outputDir: './Results',             //letak filenya di Results
+            outputFile:`report-${new Date()}`,    // html report file will be name this 
+            addScreenshots: false,   // to add screenshots in report make it as true. Default is false
+        }]],
 
     // If you are using Cucumber you need to specify the location of your step definitions.
     cucumberOpts: {
@@ -223,18 +235,18 @@ export const config = {
      * @param {string}                   uri      path to feature file
      * @param {GherkinDocument.IFeature} feature  Cucumber feature object
      */
-     beforeFeature: function (uri, feature) {
+    beforeFeature: function (uri, feature) {
         console.log("Eksekusi Sebelum feture dijalankan")
-     },
+    },
     /**
      *
      * Runs before a Cucumber Scenario.
      * @param {ITestCaseHookParameter} world    world object containing information on pickle and test step
      * @param {object}                 context  Cucumber World object
      */
-     beforeScenario: function (world, context) {
+    beforeScenario: function (world, context) {
         console.log("Eksekusi Sebelum scenario dijalankan, contoh implemntasinya seperti setup data di db")
-     },
+    },
     /**
      *
      * Runs before a Cucumber Step.
@@ -255,12 +267,8 @@ export const config = {
      * @param {number}             result.duration  duration of scenario in milliseconds
      * @param {object}             context          Cucumber World object
      */
-     afterStep: async function (step, scenario, result, context) {
-        console.log("Screenshootnya")
-        if (!result.passed) {
-        await browser.saveScreenshot('screenshot/failed-test.png')
-       }
-     },
+    // afterStep: function (step, scenario, result, context) {
+    // },
     /**
      *
      * Runs after a Cucumber Scenario.
@@ -271,8 +279,12 @@ export const config = {
      * @param {number}                 result.duration  duration of scenario in milliseconds
      * @param {object}                 context          Cucumber World object
      */
-    // afterScenario: function (world, result, context) {
-    // },
+    afterScenario: async function (world, result, context) {
+        console.log("Woi screenshootnya disini ges")
+        if (!result.passed) {
+        await browser.saveScreenshot('screenshot/failed-test.png')
+       }
+    },
     /**
      *
      * Runs after a Cucumber Feature.
